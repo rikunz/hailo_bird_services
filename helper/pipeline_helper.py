@@ -24,7 +24,6 @@ def SIMPLE_INFERENCE_PIPELINE(hef_path, post_process_so=None, function_name=None
     return pipeline
 
 def CALLBACK_OVERLAY_SINK_PIPELINE(
-    use_fps_display=False,
     shm_output_path="/tmp/infered.feed",
     name="display"
 ):
@@ -35,9 +34,18 @@ def CALLBACK_OVERLAY_SINK_PIPELINE(
         f'hailooverlay qos=false line-thickness=4 font-thickness=4 ! '
         f'{QUEUE(name=f"{name}_vc_q", max_size_buffers=30)} ! '
         f'videoconvert n-threads=2 qos=false ! '
-        + (
-            'fpsdisplaysink video-sink=xvimagesink name=hailo_display sync=false '
-            if use_fps_display else
-            f'shmsink socket-path={shm_output_path} sync=false wait-for-connection=false'
-        )
+        f'shmsink socket-path={shm_output_path} sync=false wait-for-connection=false'
     )
+
+def VIDEO_SHMSINK_PIPELINE(socket_path=None, width=1920, height=1080):
+    """
+    Creates a GStreamer pipeline string portion for shared memory video transfer using the shm plugins.
+    Shmsink creates a shared memory segment and socket.
+    Args:
+        socket_path (str): socket path.
+        width (int): Width of the video frame.
+        height (int): Height of the video frame.
+    Returns:
+        str: GStreamer pipeline string fragment.
+    """
+    return (f"videoconvert ! video/x-raw,format=RGB,width={width},height={height},framerate=10/1 ! shmsink socket-path={socket_path}")

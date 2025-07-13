@@ -11,6 +11,8 @@ from helper.pipeline_helper import (
     CALLBACK_OVERLAY_SINK_PIPELINE,
 )
 
+TITLE = "Bird Detection App"
+
 # -----------------------------------------------------------------------------------------------
 # User Gstreamer Application
 # -----------------------------------------------------------------------------------------------
@@ -36,6 +38,7 @@ class GStreamerDetectionApp(GStreamerApp):
         self.network_format = "RGB"
         nms_score_threshold = 0.3
         nms_iou_threshold = 0.45
+        self.show_fps = False
 
 
         # Determine the architecture if not specified
@@ -75,7 +78,7 @@ class GStreamerDetectionApp(GStreamerApp):
         )
 
         # Set the process title
-        setproctitle.setproctitle(DETECTION_APP_TITLE)
+        setproctitle.setproctitle(TITLE)
 
         self.create_pipeline()
 

@@ -94,15 +94,18 @@ class GStreamerDetectionApp(GStreamerApp):
         detection_pipeline_wrapper = INFERENCE_PIPELINE_WRAPPER(detection_pipeline)
         tracker_pipeline = TRACKER_PIPELINE(class_id=1)
         user_callback_pipeline = USER_CALLBACK_PIPELINE()
-        # video_shm_sink = VIDEO_SHMSINK_PIPELINE("/tmp/infered.feed")
-        display_pipeline = DISPLAY_PIPELINE(video_sink=self.video_sink, sync=self.sync, show_fps=self.show_fps)
+        video_shm_sink = CALLBACK_OVERLAY_SINK_PIPELINE(
+            use_fps_display=False,
+            shm_output_path="/tmp/infered.feed",
+            name="display"
+        )
 
         pipeline_string = (
             f'{shm_source} ! '
             f'{detection_pipeline_wrapper} ! '
             f'{tracker_pipeline} ! '
             f'{user_callback_pipeline} ! '
-            f'{display_pipeline}'
+            f'{video_shm_sink}'
         )
         print(pipeline_string)
         return pipeline_string

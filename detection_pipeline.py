@@ -2,9 +2,9 @@ import setproctitle
 from hailo_apps.hailo_app_python.core.common.installation_utils import detect_hailo_arch
 from hailo_apps.hailo_app_python.core.common.core import get_default_parser, get_resource_path
 from hailo_apps.hailo_app_python.core.common.defines import DETECTION_APP_TITLE, DETECTION_PIPELINE, RESOURCES_MODELS_DIR_NAME, RESOURCES_SO_DIR_NAME, DETECTION_POSTPROCESS_SO_FILENAME, DETECTION_POSTPROCESS_FUNCTION
-from hailo_apps.hailo_app_python.core.gstreamer.gstreamer_helper_pipelines import CROPPER_PIPELINE
+from hailo_apps.hailo_app_python.core.gstreamer.gstreamer_helper_pipelines import INFERENCE_PIPELINE, INFERENCE_PIPELINE_WRAPPER, TRACKER_PIPELINE, USER_CALLBACK_PIPELINE, VIDEO_SHMSINK_PIPELINE
 from hailo_apps.hailo_app_python.core.gstreamer.gstreamer_app import GStreamerApp, app_callback_class, dummy_callback
-
+import os
 from helper.pipeline_helper import (
     SHM_SOURCE_PIPELINE,
     SIMPLE_INFERENCE_PIPELINE,
@@ -81,34 +81,34 @@ class GStreamerDetectionApp(GStreamerApp):
 
     def get_pipeline_string(self):
         shm_source = SHM_SOURCE_PIPELINE()
-        inference = SIMPLE_INFERENCE_PIPELINE(
+        detection_pipeline = INFERENCE_PIPELINE(
             hef_path=self.hef_path,
             post_process_so=self.post_process_so,
-            function_name="filter_letterbox"
-        )
-        crop_wrapper = CROPPER_PIPELINE(
-            inner_pipeline=inference,
-            so_path=self.cropper_process_so,
-            function_name="create_crops",
-            resize_method="inter-area",
-            internal_offset=True,
-            name="cropper1"
-        )
-        tracker = 'agg1. ! \n hailotracker name=hailo_tracker keep-tracked-frames=3 keep-new-frames=3 keep-lost-frames=3'
-        callback_overlay = CALLBACK_OVERLAY_SINK_PIPELINE(
-            shm_output_path="/tmp/infered.feed",
-            use_fps_display=False
-        )
+            post_function_name=self.post_function_name,
+            batch_size=self.batch_size,
+            config_json=self.labels_json,
+            additional_params=self.thresholds_str)
+        detection_pipeline_wrapper = INFERENCE_PIPELINE_WRAPPER(detection_pipeline)
+        tracker_pipeline = TRACKER_PIPELINE(class_id=1)
+        user_callback_pipeline = USER_CALLBACK_PIPELINE()
+        video_shm_sink = VIDEO_SHMSINK_PIPELINE("/tmp/infered.feed")
 
-        pipeline = f'{shm_source} ! {crop_wrapper} {tracker} ! {callback_overlay}'
-        return pipeline
+        pipeline_string = (
+            f'{shm_source} ! '
+            f'{detection_pipeline_wrapper} ! '
+            f'{tracker_pipeline} ! '
+            f'{user_callback_pipeline} ! '
+            f'{video_shm_sink}'
+        )
+        print(pipeline_string)
+        return pipeline_string
     
 def main():
     # Create an instance of the user app callback class
     user_data = app_callback_class()
     app_callback = dummy_callback
     app = GStreamerDetectionApp(app_callback, user_data)
-    # app.run()
+    app.run()
     
 if __name__ == "__main__":
     print("Starting Hailo Detection App...")

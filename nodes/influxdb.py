@@ -1,5 +1,7 @@
 import influxdb_client, os
-from influxdb_client.client.write_api import SYNCHRONOUS
+from dotenv import load_dotenv
+
+load_dotenv()
 
 token = os.environ.get("INFLUXDB_TOKEN")
 org = os.environ.get("INFLUX_ORG")

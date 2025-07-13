@@ -15,6 +15,9 @@ from influxdb_client import Point
 from nodes.influxdb import client
 from setup_logger import logger
 from influxdb_client.client.write_api import ASYNCHRONOUS
+from dotenv import load_dotenv
+
+load_dotenv()
 
 write_api = client.write_api(write_options=ASYNCHRONOUS)
 

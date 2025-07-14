@@ -37,7 +37,7 @@ def CALLBACK_OVERLAY_SINK_PIPELINE(
         f'shmsink socket-path={shm_output_path} sync=false wait-for-connection=false'
     )
 
-def VIDEO_SHMSINK_PIPELINE(socket_path=None, width=1920, height=1080):
+def VIDEO_SHMSINK_PIPELINE(socket_path=None, width=1920, height=1080, framerate='30/1'):
     """
     Creates a GStreamer pipeline string portion for shared memory video transfer using the shm plugins.
     Shmsink creates a shared memory segment and socket.
@@ -48,7 +48,7 @@ def VIDEO_SHMSINK_PIPELINE(socket_path=None, width=1920, height=1080):
     Returns:
         str: GStreamer pipeline string fragment.
     """
-    return (f"videoconvert ! video/x-raw,format=RGB,width={width},height={height},framerate=10/1 ! shmsink socket-path={socket_path}")
+    return (f"videoconvert ! video/x-raw,format=RGB,width={width},height={height},framerate={framerate} ! shmsink socket-path={socket_path}")
 
 def TCP_VIDEO_STREAM_PIPELINE(
     host="0.0.0.0",

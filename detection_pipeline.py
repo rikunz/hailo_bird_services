@@ -104,7 +104,7 @@ class GStreamerDetectionApp(GStreamerApp):
             f'{shm_source} ! '
             f'{detection_pipeline_wrapper} ! '
             f'{tracker_pipeline} ! '
-            # f'hailooverlay ! ' # For tcp stream, use hailooverlay
+            f'hailooverlay ! ' # For tcp stream, use hailooverlay
             f'{user_callback_pipeline} ! '
             f'{video_shm_sink}' # Select The appropriate Output Pipeline
         )

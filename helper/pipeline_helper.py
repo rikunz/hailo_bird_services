@@ -28,7 +28,7 @@ def CALLBACK_OVERLAY_SINK_PIPELINE(
     name="display"
 ):
     return (
-        f'queue name=queue_user_callback leaky=downstream max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! '
+        f'queue name=queue_user_callback leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! '
         f'identity name=identity_callback signal-handoffs=true ! '
         f'{QUEUE(name=f"{name}_overlay_q", max_size_buffers=30)} ! '
         f'hailooverlay qos=false line-thickness=4 font-thickness=4 ! '

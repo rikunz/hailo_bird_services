@@ -103,6 +103,7 @@ class GStreamerDetectionApp(GStreamerApp):
             f'{shm_source} ! '
             f'{detection_pipeline_wrapper} ! '
             f'{tracker_pipeline} ! '
+            f'hailooverlay ! '
             f'{user_callback_pipeline} ! '
             f'{tcp_stream}'
         )

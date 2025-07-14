@@ -49,3 +49,19 @@ def VIDEO_SHMSINK_PIPELINE(socket_path=None, width=1920, height=1080):
         str: GStreamer pipeline string fragment.
     """
     return (f"videoconvert ! video/x-raw,format=RGB,width={width},height={height},framerate=10/1 ! shmsink socket-path={socket_path}")
+
+def TCP_VIDEO_STREAM_PIPELINE(
+    host="0.0.0.0",
+    port=9111,
+):
+    """
+    Creates a GStreamer pipeline string portion for TCP video streaming.
+    Args:
+        host (str): Host address for the TCP server.
+        port (int): Port number for the TCP server.
+    Returns:
+        str: GStreamer pipeline string fragment.
+    """
+    return (
+        f'videoconvert ! jpegenc ! multipartmux ! tcpserversink host={host} port={port}'
+    )

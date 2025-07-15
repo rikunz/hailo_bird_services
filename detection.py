@@ -13,12 +13,14 @@ from threading import Timer
 import time
 from influxdb_client import Point
 from nodes.influxdb import client
+from nodes.mqtt_control import MyMQTTClient
 from setup_logger import logger
 from influxdb_client.client.write_api import ASYNCHRONOUS
 from dotenv import load_dotenv
 
 load_dotenv()
 
+#InfluxDB Configuration
 write_api = client.write_api(write_options=ASYNCHRONOUS)
 
 INFLUX_URL = os.getenv("INFLUX_URL", "http://localhost:8086")
@@ -27,6 +29,9 @@ INFLUX_ORG = os.getenv("INFLUX_ORG", "Smart Rice Guard")
 INFLUX_BUCKET = "birds_counter"
 
 target_classes = {'bird', 'drone'}
+
+# MQTT Configuration
+mqtt_client = MyMQTTClient()
 
 # -----------------------------------------------------------------------------------------------
 # User-defined class to be used in the callback function
@@ -51,7 +56,8 @@ class user_app_callback_class(app_callback_class):
 # Function to save and reset bird detection count every minute
 def save_and_reset_task(user_data: user_app_callback_class):
     """
-    Tugas yang dijalankan oleh Timer setiap 60 detik untuk menulis ke InfluxDB.
+    This function saves the bird detection count to InfluxDB every minute and resets the count.
+    It uses the user_data object to access the count and reset it.
     """
     # 1. Ambil jumlah deteksi dari class state
     count = user_data.get_and_reset_count()
@@ -116,6 +122,9 @@ def app_callback(pad, info, user_data: user_app_callback_class):
             if track_id not in user_data.emitted_ids:
                 user_data.bird_counter_minute += 1
                 user_data.emitted_ids.add(track_id)
+            logger.info(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Deteksi burung: ID {track_id}, BBOX {bbox}, Confidence {confidence:.2f}")
+            mqtt_client.publish_play_sound()
+            logger.info(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Mengirim perintah ke MQTT untuk memainkan suara burung.")
 
     return Gst.PadProbeReturn.OK
 

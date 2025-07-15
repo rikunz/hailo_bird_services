@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class MyMQTTClient():
-    def __init__(self, broker, port):
+    def __init__(self, broker=None, port=None):
         self.broker = broker or os.getenv("BROKER", "localhost")
         self.port = port or int(os.getenv("BROKER_PORT", 1883))
         self.client = self.connect_mqtt()

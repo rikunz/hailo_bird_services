@@ -84,6 +84,7 @@ class MyMQTTClient():
 if __name__ == "__main__":
     mqtt_client = MyMQTTClient()
     mqtt_client.publish_play_sound()
-    time.sleep(10)  # Wait for a while to see the output
+    time.sleep(10)
+    mqtt_client.publish_play_sound()  # Wait for a while to see the output
     mqtt_client.client.loop_stop()  # Stop the loop when done
 

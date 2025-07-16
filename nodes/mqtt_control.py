@@ -7,10 +7,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class MyMQTTClient():
-    def __init__(self, broker=None, port=None):
+    def __init__(self, broker=None, port=None, username=None, password=None):
         self.broker = broker or os.getenv("BROKER", "localhost")
         self.port = port or int(os.getenv("BROKER_PORT", 1883))
         self.client = self.connect_mqtt()
+        self.username = username or os.getenv("MQTT_USERNAME", "user")
+        self.password = password or os.getenv("MQTT_PASSWORD", "password")
         self.client.loop_start()
         self.timer = time.time()
         self.max_time = 5
@@ -57,6 +59,7 @@ class MyMQTTClient():
         client = paho.Client(client_id="server-publish", userdata=None, protocol=paho.MQTTv5)
         client.on_connect = on_connect
 
+        client.username_pw_set(self.username, self.password)
         client.connect(self.broker, 1883)
 
         client.on_subscribe = on_subscribe

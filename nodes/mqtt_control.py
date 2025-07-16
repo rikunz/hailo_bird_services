@@ -10,9 +10,9 @@ class MyMQTTClient():
     def __init__(self, broker=None, port=None, username=None, password=None):
         self.broker = broker or os.getenv("BROKER", "localhost")
         self.port = port or int(os.getenv("BROKER_PORT", 1883))
-        self.client = self.connect_mqtt()
         self.username = username or os.getenv("MQTT_USERNAME", "test")
         self.password = password or os.getenv("MQTT_PASSWORD", "test")
+        self.client = self.connect_mqtt()
         self.client.loop_start()
         self.timer = time.time()
         self.max_time = 5

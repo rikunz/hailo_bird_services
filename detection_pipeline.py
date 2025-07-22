@@ -96,7 +96,7 @@ class GStreamerDetectionApp(GStreamerApp):
         tracker_pipeline = TRACKER_PIPELINE(class_id=-1)
         user_callback_pipeline = USER_CALLBACK_PIPELINE()
         video_shm_sink = VIDEO_SHMSINK_PIPELINE(framerate="10/1")
-        display_pipeline = DISPLAY_PIPELINE(video_sink=self.video_sink, sync=self.sync, show_fps=self.show_fps)
+        # display_pipeline = DISPLAY_PIPELINE(video_sink=self.video_sink, sync=self.sync, show_fps=self.show_fps)
         tcp_stream = TCP_VIDEO_STREAM_PIPELINE()
         udp_sink = VIDEO_STREAM_PIPELINE(port=9111, host="0.0.0.0")
 

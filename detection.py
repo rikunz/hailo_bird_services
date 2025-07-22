@@ -204,6 +204,4 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"Error dalam aplikasi: {e}")
     finally:
-        write_api.close()
-        client.close()
         cleanup_resources()

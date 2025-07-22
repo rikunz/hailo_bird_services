@@ -37,7 +37,7 @@ def CALLBACK_OVERLAY_SINK_PIPELINE(
         f'shmsink socket-path={shm_output_path} sync=false wait-for-connection=false'
     )
 
-def VIDEO_SHMSINK_PIPELINE(socket_path="/tmp/infered.feed", width=1920, height=1080, framerate='30/1'):
+def VIDEO_SHMSINK_PIPELINE(socket_path="/tmp/infered.feed", width=1920, height=1080, framerate='10/1'):
     """
     Creates a GStreamer pipeline string portion for shared memory video transfer using the shm plugins.
     Shmsink creates a shared memory segment and socket.

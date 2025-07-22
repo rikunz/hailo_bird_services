@@ -43,16 +43,12 @@ shutdown_event = Event()
 def cleanup_resources():
     """Clean up all resources properly"""
     global timer_thread
-    
-    # Set shutdown event
     shutdown_event.set()
-    
-    # Stop the timer thread properly
+
     if timer_thread and timer_thread.is_alive():
         logger.info("Menghentikan timer thread...")
         timer_thread.cancel()
-    
-    # Close InfluxDB connections
+
     try:
         logger.info("Menutup InfluxDB Write API...")
         write_api.close()
@@ -60,7 +56,6 @@ def cleanup_resources():
     except Exception as e:
         logger.error(f"Error closing InfluxDB connections: {e}")
     
-    # Close MQTT connection if available
     try:
         if hasattr(mqtt_client, 'disconnect'):
             mqtt_client.disconnect()
@@ -184,11 +179,9 @@ def signal_handler(signum, frame):
     sys.exit(0)
 
 if __name__ == "__main__":
-    # Register signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     
-    # Register cleanup function to run at exit
     atexit.register(cleanup_resources)
     
     user_data = user_app_callback_class()

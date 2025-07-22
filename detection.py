@@ -3,15 +3,12 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GLib
 import os
-import numpy as np
-import cv2
 import hailo
 from hailo_apps.hailo_app_python.core.common.buffer_utils import get_caps_from_pad, get_numpy_from_buffer
 from hailo_apps.hailo_app_python.core.gstreamer.gstreamer_app import app_callback_class
 from detection_pipeline import GStreamerDetectionApp
-from threading import Timer, Event
+from threading import Timer
 import time
-import signal
 from influxdb_client import Point
 from nodes.influxdb import client
 from nodes.mqtt_control import MyMQTTClient
@@ -19,7 +16,6 @@ from setup_logger import logger
 from influxdb_client.client.write_api import ASYNCHRONOUS
 from dotenv import load_dotenv
 import sys
-import atexit
 
 load_dotenv()
 
@@ -35,41 +31,6 @@ target_classes = {'bird', 'drone'}
 
 # MQTT Configuration
 mqtt_client = MyMQTTClient()
-
-# Global timer variable and shutdown event for proper cleanup
-timer_thread = None
-shutdown_event = Event()
-
-def cleanup_resources():
-    """Clean up all resources properly"""
-    global timer_thread
-    
-    # Set shutdown event
-    shutdown_event.set()
-    
-    # Stop the timer thread properly
-    if timer_thread and timer_thread.is_alive():
-        logger.info("Menghentikan timer thread...")
-        timer_thread.cancel()
-    
-    # Close InfluxDB connections
-    try:
-        logger.info("Menutup InfluxDB Write API...")
-        write_api.close()
-        client.close()
-    except Exception as e:
-        logger.error(f"Error closing InfluxDB connections: {e}")
-    
-    # Close MQTT connection if available
-    try:
-        if hasattr(mqtt_client, 'disconnect'):
-            mqtt_client.disconnect()
-        elif hasattr(mqtt_client, 'close'):
-            mqtt_client.close()
-    except Exception as e:
-        logger.error(f"Error closing MQTT connection: {e}")
-    
-    logger.info("Semua koneksi telah ditutup.")
 
 # -----------------------------------------------------------------------------------------------
 # User-defined class to be used in the callback function
@@ -97,13 +58,6 @@ def save_and_reset_task(user_data: user_app_callback_class):
     This function saves the bird detection count to InfluxDB every minute and resets the count.
     It uses the user_data object to access the count and reset it.
     """
-    global timer_thread
-    
-    # Check if shutdown was requested
-    if shutdown_event.is_set():
-        logger.info("Shutdown event detected, stopping timer task.")
-        return
-    
     # 1. Ambil jumlah deteksi dari class state
     count = user_data.get_and_reset_count()
     
@@ -125,11 +79,7 @@ def save_and_reset_task(user_data: user_app_callback_class):
     else:
         logger.info(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Tidak ada deteksi burung dalam satu menit terakhir.")
 
-    # Schedule next execution only if not shutting down
-    if not shutdown_event.is_set():
-        timer_thread = Timer(60.0, save_and_reset_task, [user_data])
-        timer_thread.daemon = True  # Make it daemon thread for proper cleanup
-        timer_thread.start()
+    Timer(60.0, save_and_reset_task, [user_data]).start()
 
 # -----------------------------------------------------------------------------------------------
 # User-defined callback function
@@ -177,20 +127,7 @@ def app_callback(pad, info, user_data: user_app_callback_class):
 
     return Gst.PadProbeReturn.OK
 
-def signal_handler(signum, frame):
-    """Handle SIGINT and SIGTERM signals"""
-    print(f"\nMenerima signal {signum}, menghentikan aplikasi...")
-    cleanup_resources()
-    sys.exit(0)
-
 if __name__ == "__main__":
-    # Register signal handlers
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-    
-    # Register cleanup function to run at exit
-    atexit.register(cleanup_resources)
-    
     user_data = user_app_callback_class()
     app = GStreamerDetectionApp(app_callback, user_data)
 
@@ -201,7 +138,9 @@ if __name__ == "__main__":
         app.run()
     except KeyboardInterrupt:
         print("\nPipeline dihentikan oleh pengguna.")
-    except Exception as e:
-        logger.error(f"Error dalam aplikasi: {e}")
     finally:
-        cleanup_resources()
+        # TUTUP KONEKSI! Ini akan memaksa semua data di buffer untuk dikirim.
+        print("Menutup InfluxDB Write API...")
+        write_api.close()
+        client.close()
+        sys.exit(0)

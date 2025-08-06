@@ -33,11 +33,9 @@ class GStreamerDetectionApp(GStreamerApp):
         super().__init__(parser, user_data)
         # Additional initialization code can be added here
         # Set Hailo parameters these parameters should be set based on the model used
-        self.batch_size = 2
-        self.network_width = 640
-        self.network_height = 640
-        self.network_format = "RGB"
-        nms_score_threshold = 0.3
+        self.video_width = 960
+        self.video_height = 960
+        nms_score_threshold = 0.1
         nms_iou_threshold = 0.45
         self.show_fps = False
 
@@ -71,6 +69,8 @@ class GStreamerDetectionApp(GStreamerApp):
         self.labels_json = self.options_menu.labels_json
 
         self.app_callback = app_callback
+        print(f"Using HEF: {self.hef_path}")
+        print(f"Using labels JSON: {self.labels_json}")
 
         self.thresholds_str = (
             f"nms-score-threshold={nms_score_threshold} "

@@ -33,10 +33,11 @@ class GStreamerDetectionApp(GStreamerApp):
         super().__init__(parser, user_data)
         # Additional initialization code can be added here
         # Set Hailo parameters these parameters should be set based on the model used
-        self.video_width = 960
-        self.video_height = 960
+        self.batch_size = 2
+        self.video_width = 1920
+        self.video_height = 1080
         nms_score_threshold = 0.1
-        nms_iou_threshold = 0.45
+        nms_iou_threshold = 0.1
         self.show_fps = False
 
 

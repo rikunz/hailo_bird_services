@@ -233,8 +233,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions and support:
 - Create an issue in this repository
-- Email: [your-email@example.com]
-- Documentation: [Project Wiki](https://github.com/yourusername/hailo-bird-detection/wiki)
+- Email: [thoriqfirdaus8@gmail.com]
 
 ---
 
